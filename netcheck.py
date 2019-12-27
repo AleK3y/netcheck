@@ -141,6 +141,9 @@ for i in range(len(sys.argv)):
 	elif sys.argv[i] == "-c":
 		try:
 			COUNT = int(sys.argv[i+1])
+			if COUNT <= 0:
+				print(Fore.YELLOW + "Can't use a count less than or equal to zero." + Style.RESET_ALL)
+				leave(0)
 		except (IndexError, ValueError):
 			usage()
 	
