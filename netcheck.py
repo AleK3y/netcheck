@@ -38,6 +38,15 @@ def usage():
 def sleep(ms):
 	time.sleep(ms/1000)
 
+# Close both I/O instead of calling sys.exit()
+def leave(code):
+	try:
+		sys.stdin.close()
+		sys.stdout.close()
+	except:
+		pass
+	raise SystemExit(code)
+
 # List of HTTP status codes
 codes = {
 	# 1XX Informational
@@ -124,7 +133,7 @@ for i in range(len(sys.argv)):
 	if sys.argv[i] == "-u":
 		try:
 			URL = sys.argv[i+1]
-		except:
+		except IndexError:
 			usage()
 		if "http://" not in URL and "https://" not in URL:
 			URL = "http://" + URL
@@ -132,20 +141,26 @@ for i in range(len(sys.argv)):
 	elif sys.argv[i] == "-c":
 		try:
 			COUNT = int(sys.argv[i+1])
-		except:
+		except (IndexError, ValueError):
 			usage()
 	
 	elif sys.argv[i] == "-t":
 		try:
-			TIMEOUT = int(sys.argv[i+1])
 			manualTimeout = True
-		except:
+			TIMEOUT = float(sys.argv[i+1])
+			if TIMEOUT <= 0:
+				print(Fore.YELLOW + "Can't use a timeout less than or equal to zero." + Style.RESET_ALL)
+				leave(0)
+		except (IndexError, ValueError):
 			usage()
 	
 	elif sys.argv[i] == "-d":
 		try:
 			DELAY = int(sys.argv[i+1])
-		except:
+			if DELAY <= 0:
+				print(Fore.YELLOW + "Can't use a delay less than or equal to zero." + Style.RESET_ALL)
+				leave(0)
+		except (IndexError, ValueError):
 			usage()
 
 	elif "-" in sys.argv[i] and i > 0:
@@ -197,11 +212,4 @@ try:
 except KeyboardInterrupt:
 	print()		# Goes one line after ^C
 	print(Fore.YELLOW + "Quitting.." + Style.RESET_ALL)
-	
-	# Close both I/O instead of calling sys.exit()
-	try:
-		sys.stdin.close()
-		sys.stdout.close()
-	except:
-		pass
-	raise SystemExit(0)
+	leave(0)
